@@ -20,6 +20,8 @@ type config struct {
 	ValidPath *regexp.Regexp
 }
 
+type handlerFuncWithTitle func(http.ResponseWriter, *http.Request, *config, string)
+
 type Page struct {
 	Title string
 	Body  []byte
@@ -64,7 +66,7 @@ func getTitle(validPath *regexp.Regexp, w http.ResponseWriter, r *http.Request) 
 	return m[2], nil
 }
 
-func viewHandler(configuration *config) http.HandlerFunc {
+func makeHandler(configuration *config, fn handlerFuncWithTitle) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		title, err := getTitle(configuration.ValidPath, writer, request)
 		if err != nil {
@@ -72,47 +74,35 @@ func viewHandler(configuration *config) http.HandlerFunc {
 			return
 		}
 
-		p, err := loadPage(title)
-		if err != nil {
-			CheckIfError(err)
-			http.Redirect(writer, request, editUrlPath+title, http.StatusFound)
-			return
-		}
-		renderTemplate(configuration.Templates, writer, "view", p)
+		fn(writer, request, configuration, title)
 	}
 }
 
-func editHandler(configuration *config) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		title, err := getTitle(configuration.ValidPath, writer, request)
-		if err != nil {
-			CheckIfError(err)
-			return
-		}
-
-		p, err := loadPage(title)
-		if err != nil {
-			CheckIfError(err)
-			p = &Page{Title: title}
-		}
-		renderTemplate(configuration.Templates, writer, "edit", p)
+func viewHandler(writer http.ResponseWriter, request *http.Request, configuration *config, title string) {
+	p, err := loadPage(title)
+	if err != nil {
+		CheckIfError(err)
+		http.Redirect(writer, request, editUrlPath+title, http.StatusFound)
+		return
 	}
+	renderTemplate(configuration.Templates, writer, "view", p)
 }
 
-func saveHandler(configuration *config) http.HandlerFunc {
-	return func(writer http.ResponseWriter, request *http.Request) {
-		title, err := getTitle(configuration.ValidPath, writer, request)
-		if err != nil {
-			CheckIfError(err)
-			return
-		}
-
-		body := request.FormValue("body")
-		p := &Page{Title: title, Body: []byte(body)}
-		CheckIfError(p.save())
-
-		http.Redirect(writer, request, viewUrlPath+title, http.StatusFound)
+func editHandler(writer http.ResponseWriter, _ *http.Request, configuration *config, title string) {
+	p, err := loadPage(title)
+	if err != nil {
+		CheckIfError(err)
+		p = &Page{Title: title}
 	}
+	renderTemplate(configuration.Templates, writer, "edit", p)
+}
+
+func saveHandler(writer http.ResponseWriter, request *http.Request, _ *config, title string) {
+	body := request.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	CheckIfError(p.save())
+
+	http.Redirect(writer, request, viewUrlPath+title, http.StatusFound)
 }
 
 func main() {
@@ -120,8 +110,8 @@ func main() {
 		Templates: template.Must(template.ParseFiles(storagePath+"edit.html", storagePath+"view.html")),
 		ValidPath: regexp.MustCompile(validPathExpresion),
 	}
-	http.HandleFunc(viewUrlPath, viewHandler(configuration))
-	http.HandleFunc(editUrlPath, editHandler(configuration))
-	http.HandleFunc(saveUrlPath, saveHandler(configuration))
+	http.HandleFunc(viewUrlPath, makeHandler(configuration, viewHandler))
+	http.HandleFunc(editUrlPath, makeHandler(configuration, editHandler))
+	http.HandleFunc(saveUrlPath, makeHandler(configuration, saveHandler))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
