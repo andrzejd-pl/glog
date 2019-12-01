@@ -5,12 +5,19 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"regexp"
 )
 
 const storagePath string = "./storage/"
 const viewUrlPath string = "/view/"
 const editUrlPath string = "/edit/"
 const saveUrlPath string = "/save/"
+const validPathExpresion string = "^/(edit|save|view)/([a-zA-Z0-9]+)$"
+
+type config struct {
+	Templates *template.Template
+	ValidPath *regexp.Regexp
+}
 
 type Page struct {
 	Title string
@@ -46,7 +53,7 @@ func renderTemplate(templates *template.Template, w http.ResponseWriter, tmpl st
 	CheckIfError(templates.ExecuteTemplate(w, tmpl+".html", p))
 }
 
-func viewHandler(templates *template.Template) http.HandlerFunc {
+func viewHandler(configuration *config) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		title := request.URL.Path[len(viewUrlPath):]
 		p, err := loadPage(title)
@@ -55,11 +62,11 @@ func viewHandler(templates *template.Template) http.HandlerFunc {
 			http.Redirect(writer, request, editUrlPath+title, http.StatusFound)
 			return
 		}
-		renderTemplate(templates, writer, "view", p)
+		renderTemplate(configuration.Templates, writer, "view", p)
 	}
 }
 
-func editHandler(templates *template.Template) http.HandlerFunc {
+func editHandler(configuration *config) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
 		title := request.URL.Path[len(editUrlPath):]
 		p, err := loadPage(title)
@@ -67,7 +74,7 @@ func editHandler(templates *template.Template) http.HandlerFunc {
 			CheckIfError(err)
 			p = &Page{Title: title}
 		}
-		renderTemplate(templates, writer, "edit", p)
+		renderTemplate(configuration.Templates, writer, "edit", p)
 	}
 }
 
@@ -81,9 +88,12 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	templates := template.Must(template.ParseFiles(storagePath+"edit.html", storagePath+"view.html"))
-	http.HandleFunc(viewUrlPath, viewHandler(templates))
-	http.HandleFunc(editUrlPath, editHandler(templates))
+	configuration := &config{
+		Templates: template.Must(template.ParseFiles(storagePath+"edit.html", storagePath+"view.html")),
+		ValidPath: regexp.MustCompile(validPathExpresion),
+	}
+	http.HandleFunc(viewUrlPath, viewHandler(configuration))
+	http.HandleFunc(editUrlPath, editHandler(configuration))
 	http.HandleFunc(saveUrlPath, saveHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
