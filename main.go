@@ -9,6 +9,8 @@ import (
 
 const storagePath string = "./storage/"
 const viewUrlPath string = "/view/"
+const editUrlPath string = "/edit/"
+const saveUrlPath string = "/save/"
 
 type Page struct {
 	Title string
@@ -46,7 +48,28 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = fmt.Fprintf(w, "<h1>%s</h1><div>%s</dir>", p.Title, p.Body)
 }
 
+func editHandler(w http.ResponseWriter, r *http.Request) {
+	title := r.URL.Path[len(editUrlPath):]
+	p, err := loadPage(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+
+	_, _ = fmt.Fprintf(w, "<h1>Editing %s</h1>"+
+		"<form action=\"/save/%s\" method=\"POST\">"+
+		"<textarea name=\"body\">%s</textarea><br>"+
+		"<input type=\"submit\" value=\"Save\">"+
+		"</form>",
+		p.Title, p.Title, p.Body)
+}
+
+func saveHandler(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func main() {
 	http.HandleFunc(viewUrlPath, viewHandler)
+	http.HandleFunc(editUrlPath, editHandler)
+	http.HandleFunc(saveUrlPath, saveHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
