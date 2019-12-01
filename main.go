@@ -47,13 +47,14 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	t, err := template.ParseFiles(storagePath + tmpl + ".html")
 	CheckIfError(err)
 
-	_ = t.Execute(w, p)
+	CheckIfError(t.Execute(w, p))
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(viewUrlPath):]
 	p, err := loadPage(title)
 	if err != nil {
+		CheckIfError(err)
 		http.Redirect(w, r, editUrlPath+title, http.StatusFound)
 		return
 	}
@@ -64,6 +65,7 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(editUrlPath):]
 	p, err := loadPage(title)
 	if err != nil {
+		CheckIfError(err)
 		p = &Page{Title: title}
 	}
 	renderTemplate(w, "edit", p)
@@ -73,8 +75,8 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(saveUrlPath):]
 	body := r.FormValue("body")
 	p := &Page{Title: title, Body: []byte(body)}
-	err := p.save()
-	CheckIfError(err)
+	CheckIfError(p.save())
+
 	http.Redirect(w, r, viewUrlPath+title, http.StatusFound)
 }
 
