@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -39,12 +38,12 @@ func loadPage(title string) (*Page, error) {
 
 func CheckIfError(err error) {
 	if err != nil {
-		_ = fmt.Errorf("error: %s", err.Error())
+		log.Println(err.Error())
 	}
 }
 
 func renderTemplate(templates *template.Template, w http.ResponseWriter, tmpl string, p *Page) {
-	CheckIfError(templates.ExecuteTemplate(w, storagePath+tmpl+".html", p))
+	CheckIfError(templates.ExecuteTemplate(w, tmpl+".html", p))
 }
 
 func viewHandler(templates *template.Template) http.HandlerFunc {
