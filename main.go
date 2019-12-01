@@ -44,13 +44,19 @@ func CheckIfError(err error) {
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	t, _ := template.ParseFiles(storagePath + tmpl + ".html")
+	t, err := template.ParseFiles(storagePath + tmpl + ".html")
+	CheckIfError(err)
+
 	_ = t.Execute(w, p)
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(viewUrlPath):]
-	p, _ := loadPage(title)
+	p, err := loadPage(title)
+	if err != nil {
+		http.Redirect(w, r, editUrlPath+title, http.StatusFound)
+		return
+	}
 	renderTemplate(w, "view", p)
 }
 
@@ -64,7 +70,11 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
-
+	title := r.URL.Path[len(saveUrlPath):]
+	body := r.FormValue("body")
+	p := &Page{Title: title, Body: []byte(body)}
+	p.save()
+	http.Redirect(w, r, viewUrlPath+title, http.StatusFound)
 }
 
 func main() {
