@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -53,9 +54,24 @@ func renderTemplate(templates *template.Template, w http.ResponseWriter, tmpl st
 	CheckIfError(templates.ExecuteTemplate(w, tmpl+".html", p))
 }
 
+func getTitle(validPath *regexp.Regexp, w http.ResponseWriter, r *http.Request) (string, error) {
+	m := validPath.FindStringSubmatch(r.URL.Path)
+	if m == nil {
+		http.NotFound(w, r)
+		return "", errors.New("invalid page title")
+	}
+
+	return m[2], nil
+}
+
 func viewHandler(configuration *config) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		title := request.URL.Path[len(viewUrlPath):]
+		title, err := getTitle(configuration.ValidPath, writer, request)
+		if err != nil {
+			CheckIfError(err)
+			return
+		}
+
 		p, err := loadPage(title)
 		if err != nil {
 			CheckIfError(err)
@@ -68,7 +84,12 @@ func viewHandler(configuration *config) http.HandlerFunc {
 
 func editHandler(configuration *config) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		title := request.URL.Path[len(editUrlPath):]
+		title, err := getTitle(configuration.ValidPath, writer, request)
+		if err != nil {
+			CheckIfError(err)
+			return
+		}
+
 		p, err := loadPage(title)
 		if err != nil {
 			CheckIfError(err)
@@ -78,13 +99,20 @@ func editHandler(configuration *config) http.HandlerFunc {
 	}
 }
 
-func saveHandler(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Path[len(saveUrlPath):]
-	body := r.FormValue("body")
-	p := &Page{Title: title, Body: []byte(body)}
-	CheckIfError(p.save())
+func saveHandler(configuration *config) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		title, err := getTitle(configuration.ValidPath, writer, request)
+		if err != nil {
+			CheckIfError(err)
+			return
+		}
 
-	http.Redirect(w, r, viewUrlPath+title, http.StatusFound)
+		body := request.FormValue("body")
+		p := &Page{Title: title, Body: []byte(body)}
+		CheckIfError(p.save())
+
+		http.Redirect(writer, request, viewUrlPath+title, http.StatusFound)
+	}
 }
 
 func main() {
@@ -94,6 +122,6 @@ func main() {
 	}
 	http.HandleFunc(viewUrlPath, viewHandler(configuration))
 	http.HandleFunc(editUrlPath, editHandler(configuration))
-	http.HandleFunc(saveUrlPath, saveHandler)
+	http.HandleFunc(saveUrlPath, saveHandler(configuration))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
