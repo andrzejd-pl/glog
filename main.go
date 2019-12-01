@@ -73,7 +73,8 @@ func saveHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(saveUrlPath):]
 	body := r.FormValue("body")
 	p := &Page{Title: title, Body: []byte(body)}
-	p.save()
+	err := p.save()
+	CheckIfError(err)
 	http.Redirect(w, r, viewUrlPath+title, http.StatusFound)
 }
 
