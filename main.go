@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -45,7 +46,8 @@ func CheckIfError(err error) {
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	title := r.URL.Path[len(viewUrlPath):]
 	p, _ := loadPage(title)
-	_, _ = fmt.Fprintf(w, "<h1>%s</h1><div>%s</dir>", p.Title, p.Body)
+	t, _ := template.ParseFiles(storagePath + "view.html")
+	t.Execute(w, p)
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,13 +56,8 @@ func editHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		p = &Page{Title: title}
 	}
-
-	_, _ = fmt.Fprintf(w, "<h1>Editing %s</h1>"+
-		"<form action=\"/save/%s\" method=\"POST\">"+
-		"<textarea name=\"body\">%s</textarea><br>"+
-		"<input type=\"submit\" value=\"Save\">"+
-		"</form>",
-		p.Title, p.Title, p.Body)
+	t, _ := template.ParseFiles(storagePath + "edit.html")
+	_ = t.Execute(w, p)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request) {
