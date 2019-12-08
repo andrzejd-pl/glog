@@ -17,8 +17,10 @@ type Post struct {
 	Timestamp      time.Time
 }
 
+type Posts *[]Post
+
 type PostRepository interface {
-	GetAllPosts() (*[]Post, error)
+	GetAllPosts() (Posts, error)
 }
 
 type mysqlPostRepository struct {
@@ -29,7 +31,7 @@ func NewMysqlPostRepository(connection *sql.DB) PostRepository {
 	return &mysqlPostRepository{mysqlConnection: connection}
 }
 
-func (m *mysqlPostRepository) GetAllPosts() (*[]Post, error) {
+func (m *mysqlPostRepository) GetAllPosts() (Posts, error) {
 	rows, err := m.mysqlConnection.Query(getAllQuery)
 
 	if err != nil {
