@@ -3,24 +3,24 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/andrzejd-pl/glog/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 )
 
-const query string = "select p.PostTitle, p.PostContent, p.PostInsertTimestamp from Posts p WHERE p.PostId IN (SELECT MAX(PostId) FROM Posts GROUP BY PostUUID);"
-
 func main() {
 	db, err := sql.Open("mysql", "root:my-secret-pw@/glog")
 	CheckIfError(err)
-	defer db.Close()
-
-	rows, err := db.Query(query)
+	defer func() { _ = db.Close() }()
+	repo := repository.NewMysqlPostRepository(db)
+	posts, err := repo.GetAllPosts()
 	CheckIfError(err)
-	for rows.Next() {
-		var title, content, timestamp string
-		err = rows.Scan(&title, &content, &timestamp)
-		CheckIfError(err)
-		fmt.Println(title + ": " + content)
+
+	for _, post := range *posts {
+		fmt.Println("Title: ", post.Title)
+		fmt.Println("Modify: ", post.Timestamp.Format("2006-01-02 15:04:05"))
+		fmt.Println("Content: ", post.Content)
+		fmt.Println("----------------------")
 	}
 }
 
