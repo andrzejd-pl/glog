@@ -21,7 +21,8 @@ type Post struct {
 type Posts []Post
 
 func (p Posts) MarshalJSON() ([]byte, error) {
-	return json.Marshal(p)
+	post := []Post(p)
+	return json.Marshal(post)
 }
 
 type PostRepository interface {
