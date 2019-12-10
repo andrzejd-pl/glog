@@ -1,8 +1,10 @@
 package api
 
 import (
+	"bytes"
 	"github.com/andrzejd-pl/glog/repository"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,11 +23,13 @@ func TestGetAllPosts(t *testing.T) {
 			name: "Empty test",
 			args: struct{ repository repository.PostRepository }{repository: nil},
 			want: func(writer http.ResponseWriter, request *http.Request) {
-				http.Error(writer, "Resource not found", http.StatusInternalServerError)
+				http.Error(writer, ResourceNotFound, http.StatusInternalServerError)
 			},
 		},
 	}
 	for _, tt := range tests {
+		buff := bytes.NewBufferString("")
+		log.SetOutput(buff)
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest("GET", "/", nil)
 
