@@ -1,3 +1,5 @@
+create database glog;
+use glog;
 CREATE TABLE `Posts`
 (
     `PostId`              int(11)      NOT NULL AUTO_INCREMENT,
