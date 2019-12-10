@@ -12,7 +12,7 @@ import (
 
 func main() {
 	log.SetOutput(os.Stderr)
-	db, err := sql.Open("mysql", "root:my-secret-pw@database/glog")
+	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(database)/glog")
 	CheckIfError(err)
 	defer func() { _ = db.Close() }()
 	repo := repository.NewMysqlPostRepository(db)
