@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"encoding/json"
 	"math/big"
 	"time"
 )
@@ -17,7 +18,11 @@ type Post struct {
 	Timestamp      time.Time
 }
 
-type Posts *[]Post
+type Posts []Post
+
+func (p Posts) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p)
+}
 
 type PostRepository interface {
 	GetAllPosts() (Posts, error)
@@ -44,13 +49,13 @@ func (m *mysqlPostRepository) GetAllPosts() (Posts, error) {
 		var uuid, title, content, timestampValue string
 		err = rows.Scan(&uuid, &title, &content, &timestampValue)
 		if err != nil {
-			return &posts, err
+			return posts, err
 		}
 
 		timestamp, err := time.Parse(timestampLayout, timestampValue)
 
 		if err != nil {
-			return &posts, err
+			return posts, err
 		}
 
 		post := Post{Uuid: big.Int{}, Title: title, Content: content, Timestamp: timestamp}
@@ -59,5 +64,5 @@ func (m *mysqlPostRepository) GetAllPosts() (Posts, error) {
 		posts = append(posts, post)
 	}
 
-	return &posts, nil
+	return posts, nil
 }
