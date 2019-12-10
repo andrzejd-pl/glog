@@ -1,11 +1,15 @@
 package api
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 type Endpoints map[string]http.HandlerFunc
 
 func MakeHandler(serverMux *http.ServeMux, address string, endpoints Endpoints) {
 	serverMux.HandleFunc(address, func(writer http.ResponseWriter, request *http.Request) {
+		log.Println(request.RemoteAddr, request.Method, request.URL)
 		action, ok := endpoints[request.Method]
 
 		if !ok {
