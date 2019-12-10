@@ -2,6 +2,12 @@ package api
 
 import "net/http"
 
+const (
+	DatabaseConnectionError = "database connection error"
+	JsonMarshalError        = "data marshal error"
+	ResourceNotFound        = "resource not found"
+)
+
 type Endpoints map[string]http.HandlerFunc
 
 func MakeHandler(serverMux *http.ServeMux, address string, endpoints Endpoints) {
