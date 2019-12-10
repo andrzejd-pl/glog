@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   api:
-    image: andrzejd/glog:v0.3
+    image: andrzejd/glog
     ports:
       - 80:80
     depends_on:
@@ -13,5 +13,3 @@ services:
       - ./storage/database:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: my-secret-pw
-    ports:
-      - 3306:3306
