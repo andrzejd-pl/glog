@@ -18,7 +18,7 @@ func main() {
 	repo := repository.NewMysqlPostRepository(db)
 
 	api.MakeHandler(http.DefaultServeMux, "/api/posts", api.Endpoints{
-		"GET": api.GetAllPosts(repo),
+		"GET": api.MakeContentType(api.GetAllPosts(repo), "application/json"),
 	})
 	log.Fatalln(http.ListenAndServe(":80", http.DefaultServeMux))
 }
