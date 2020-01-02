@@ -26,3 +26,10 @@ func MakeHandler(serverMux *http.ServeMux, address string, endpoints Endpoints) 
 		action(writer, request)
 	})
 }
+
+func MakeContentType(handler http.HandlerFunc, contentType string) http.HandlerFunc {
+	return func(writer http.ResponseWriter, request *http.Request) {
+		writer.Header().Set("Content-Type", contentType)
+		handler(writer, request)
+	}
+}
