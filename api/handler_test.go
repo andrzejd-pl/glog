@@ -164,6 +164,19 @@ func TestMakeHandler(t *testing.T) {
 	}
 }
 
+func TestMakeContentType(t *testing.T) {
+	want := "application/json"
+	buff := httptest.NewRecorder()
+	MakeContentType(func(http.ResponseWriter, *http.Request) {}, want).
+		ServeHTTP(buff, httptest.NewRequest("GET", "/", nil))
+
+	response := buff.Result()
+
+	if contentType := response.Header["Content-Type"]; len(contentType) != 1 || contentType[0] != want {
+		t.Errorf("got %v want %v", contentType, []string{want})
+	}
+}
+
 func checkIfNotError(t *testing.T, err error) {
 	t.Helper()
 
