@@ -2,7 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"github.com/andrzejd-pl/configuration_loader"
 	"github.com/andrzejd-pl/glog/api"
+	"github.com/andrzejd-pl/glog/configuration"
 	"github.com/andrzejd-pl/glog/repository"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
@@ -12,7 +15,19 @@ import (
 
 func main() {
 	log.SetOutput(os.Stderr)
-	db, err := sql.Open("mysql", "root:my-secret-pw@tcp(database)/glog")
+	configFilePtr := flag.String(
+		"config",
+		"./config.json",
+		"a configuration file\n example configuration file: "+
+			"https://github.com/andrzejd-pl/glog/blob/master/config.example.json",
+	)
+	flag.Parse()
+
+	config := configuration.Config{}
+	cf := configuration_loader.NewJsonFileConfiguration(*configFilePtr, &config)
+	CheckIfError(cf.LoadFromFile())
+
+	db, err := sql.Open("mysql", config.DatabaseDsn)
 	CheckIfError(err)
 	defer func() { _ = db.Close() }()
 	repo := repository.NewMysqlPostRepository(db)

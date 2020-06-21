@@ -1,0 +1,3 @@
+{
+  "database_dsn": "user:passwd@tcp(ip-database)/database-name"
+}

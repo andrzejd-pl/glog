@@ -15,8 +15,8 @@ docker-compose up -d
 
 ## TODO
 
-- add custom configuration
-- add categories to posts
-- add admin panel
-- add frontend
-- add pagination
+- [x] ~~add custom configuration~~
+- [ ] add categories to posts
+- [ ] add admin panel
+- [ ] add frontend
+- [ ] add pagination
