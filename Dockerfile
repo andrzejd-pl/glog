@@ -6,4 +6,4 @@ RUN go install github.com/andrzejd-pl/glog
 EXPOSE 80
 ENV config_file /etc/glog/config.json
 
-CMD ["glog", "-config=$config_file"]
+CMD glog -config=${config_file}
