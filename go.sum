@@ -1,4 +1,4 @@
-github.com/andrzejd-pl/configuration_loader v1.0.0 h1:ka6EO9GK04j/fGUc2sP50b7JyAQK3xEoPxxWOOeHjoA=
-github.com/andrzejd-pl/configuration_loader v1.0.0/go.mod h1:qofBpSQuxYKNYe16kqpJfpsmN+WyKbAX6y04bCGgKTw=
+github.com/andrzejd-pl/configload v1.0.1 h1:Ku1HF+k5NwjtPTfgIK9N450K73SD1kgNDNP7Ha1brks=
+github.com/andrzejd-pl/configload v1.0.1/go.mod h1:hs0QK+DQ5rSfXBZvNoq3ZX+3q18X10opRwcgFe3jPXk=
 github.com/go-sql-driver/mysql v1.5.0 h1:ozyZYNQW3x3HtqT1jira07DN2PArx2v7/mN66gGcHOs=
 github.com/go-sql-driver/mysql v1.5.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
