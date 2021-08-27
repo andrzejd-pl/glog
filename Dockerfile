@@ -1,7 +1,11 @@
-FROM andrzejd/go-env
+FROM andrzejd/go-env as build
 
 RUN go get -u github.com/andrzejd-pl/glog
 RUN go install github.com/andrzejd-pl/glog
+
+FROM alpine as prod
+
+COPY --from=build /go/bin/glog /usr/local/bin/glog
 
 EXPOSE 80
 ENV config_file /etc/glog/config.json
